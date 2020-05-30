@@ -2,24 +2,17 @@
 " => General
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 set nocompatible
-
-" Sets how many lines of history VIM has to remember
 set history=500
-
-" Enable filetype plugins
 filetype plugin on
 filetype indent on
-
-" Set to auto read when a file is changed from the outside
 set autoread
 au FocusGained,BufEnter * checktime
 
-set shortmess+=I
-set number
-set relativenumber
+set shortmess+=I " Disable the default Vim startup message
+set number " show line numbers
+set relativenumber " use relative lines numbering by default
 
-" Enable mouse support
-set mouse+=a
+set mouse+=a " enable mouse support
 
 let mapleader = ","
 
@@ -93,8 +86,7 @@ call plug#end()
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => VIM user interface
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Set 7 lines to the cursor - when moving vertically using j/k
-set so=7
+set so=7 " Set 7 lines to the cursor - when moving vertically using j/k
 
 " Avoid garbled characters in Chinese language windows OS
 let $LANG='en'
@@ -102,7 +94,6 @@ set langmenu=en
 source $VIMRUNTIME/delmenu.vim
 source $VIMRUNTIME/menu.vim
 
-" Turn on the Wild menu
 set wildmenu
 
 " Ignore compiled files
@@ -113,41 +104,22 @@ else
     set wildignore+=*/.git/*,*/.hg/*,*/.svn/*,*/.DS_Store
 endif
 
-"Always show current position
-set ruler
+set ruler " Always show current position
+set cmdheight=1 " Height of the command bar
+set hid " A buffer becomes hidden when it is abandoned
 
-" Height of the command bar
-set cmdheight=1
-
-" A buffer becomes hidden when it is abandoned
-set hid
-
-" Configure backspace so it acts as it should act
 set backspace=eol,start,indent
 set whichwrap+=<,>,h,l
 
-" Ignore case when searching
-set ignorecase
-
-" When searching try to be smart about cases
-set smartcase
-
-" Highlight search results
-set hlsearch
-
-" Makes search act like search in modern browsers
-set incsearch
-
-" Don't redraw while executing macros (good performance config)
-set lazyredraw
-
-" For regular expressions turn magic on
-set magic
-
-" Show matching brackets when text indicator is over them
-set showmatch
-" How many tenths of a second to blink when matching brackets
-set mat=2
+set ignorecase " Ignore case when searching
+set smartcase " When searching try to be smart about cases
+set hlsearch " Highlight search results
+set incsearch " Makes search act like search in modern browsers
+set lazyredraw " Don't redraw while executing macros (good performance config)
+set magic " For regular expressions turn magic on
+set showmatch " Show matching brackets when text indicator is over them
+set mat=2 " How many tenths of a second to blink when matching brackets
+set foldcolumn=1 " Add a bit extra margin to the left
 
 " No annoying sound on errors
 set noerrorbells
@@ -155,15 +127,10 @@ set novisualbell
 set t_vb=
 set tm=500
 
-" Add a bit extra margin to the left
-set foldcolumn=1
-
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Colors and Fonts
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-" Enable syntax highlighting
-syntax enable
+syntax enable " Enable syntax highlighting
 
 if (has("nvim"))
   "For Neovim 0.1.3 and 0.1.4 < https://github.com/neovim/neovim/pull/2198 >
@@ -182,11 +149,8 @@ colorscheme palenight
 let g:lightline = { 'colorscheme': 'palenight' }
 let g:airline_theme = "palenight"
 
-" Set utf8 as standard encoding and en_US as the standard language
-set encoding=utf8
-
-" Use Unix as the standard file type
-set ffs=unix,dos,mac
+set encoding=utf8 " Set utf8 as standard encoding and en_US as the standard language
+set ffs=unix,dos,mac " Use Unix as the standard file type
 
 " hightlight trailing whitespaces
 :highlight ExtraWhitespace ctermbg=red guibg=red
@@ -204,12 +168,8 @@ set noswapfile
 " => Text, tab and indent related
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-" Use spaces instead of tabs
-set expandtab
-
-" Be smart when using tabs ;)
+set expandtab " Use spaces instead of tabs
 set smarttab
-
 " 1 tab == 4 spaces
 set shiftwidth=4
 set tabstop=4
@@ -247,13 +207,11 @@ map <C-l> <C-W>l
 " Return to last edit position when opening files (You want this!)
 au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
 
-
 """"""""""""""""""""""""""""""
 " => Status line
 """"""""""""""""""""""""""""""
 
-" Always show the status line
-set laststatus=2
+set laststatus=2 " Always show the status line
 
 " Format the status line
 " set statusline=\ %{HasPaste()}%F%m%r%h\ %w\ \ CWD:\ %r%{getcwd()}%h\ \ \ Line:\ %l\ \ Column:\ %c
