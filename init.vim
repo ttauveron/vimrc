@@ -129,6 +129,8 @@ set novisualbell
 set t_vb=
 set tm=500
 
+set cursorline     " highlight current line
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Colors and Fonts
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
