@@ -46,6 +46,7 @@ autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
 map <C-n> :NERDTreeToggle<CR>
+
 " }}}
 
 Plug 'vim-airline/vim-airline'
@@ -80,6 +81,8 @@ Plug 'vim-scripts/YankRing.vim'
 noremap <leader>y :YRShow<CR>
 "fix for yankring and neovim https://github.com/neovim/neovim/issues/2642
 let g:yankring_clipboard_monitor=0
+let g:yankring_replace_n_nkey=''
+let g:yankring_replace_n_pkey=''
 " }}}
 
 call plug#end()
