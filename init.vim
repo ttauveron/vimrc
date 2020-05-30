@@ -78,6 +78,8 @@ Plug 'mbbill/undotree'
 Plug 'vim-scripts/YankRing.vim'
 " {{{
 noremap <leader>y :YRShow<CR>
+"fix for yankring and neovim https://github.com/neovim/neovim/issues/2642
+let g:yankring_clipboard_monitor=0
 " }}}
 
 call plug#end()
