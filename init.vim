@@ -62,6 +62,7 @@ Plug 'junegunn/fzf.vim'
 noremap <leader>l :Buffers<CR>
 map <C-space> :Files<CR>
 map <space> :Lines<CR>
+map <M-x> :Commands<CR>
 " }}}
 
 Plug 'mbbill/undotree'
