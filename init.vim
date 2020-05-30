@@ -61,6 +61,25 @@ Plug 'junegunn/fzf.vim'
 " {{{
 noremap <leader>l :Buffers<CR>
 map <C-space> :Files<CR>
+map <space> :Lines<CR>
+" }}}
+
+Plug 'mbbill/undotree'
+" {{{
+  set undofile
+  " Auto create undodir if not exists
+  let undodir = expand($HOME . '/.config/nvim/cache/undodir')
+  if !isdirectory(undodir)
+    call mkdir(undodir, 'p')
+  endif
+  let &undodir = undodir
+
+  nnoremap <leader>u :UndotreeToggle<CR>
+" }}}
+
+Plug 'vim-scripts/YankRing.vim'
+" {{{
+noremap <leader>y :YRShow<CR>
 " }}}
 
 call plug#end()
@@ -210,8 +229,6 @@ vnoremap <silent> # :<C-u>call VisualSelection('', '')<CR>?<C-R>=@/<CR><CR>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Moving around, tabs, windows and buffers
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Map <Space> to / (search)
-map <space> /
 
 " Disable highlight when <leader><cr> is pressed
 map <silent> <leader><cr> :noh<cr>
@@ -256,9 +273,9 @@ inoremap <Down>  <ESC>:echoe "Use j"<CR>
 
 " remap shortcuts
 " map <C-a> <ESC>0
-" imap <C-a> <ESC>I
 " map <C-e> <ESC>$
-" imap <C-e> <ESC>A
+imap <C-a> <ESC>I
+imap <C-e> <ESC>A
 
 " Move a line of text using ALT+[jk] or Command+[jk] on mac
 nmap <M-j> mz:m+<cr>`z
