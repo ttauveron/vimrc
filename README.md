@@ -5,3 +5,4 @@
 - https://github.com/anishathalye/dotfiles/blob/master/vimrc
 - https://github.com/jonhoo/configs/blob/master/editor/.config/nvim/init.vim
 - https://github.com/JJGO/dotfiles/blob/master/vim/.vimrc
+- https://github.com/zenbro/dotfiles/blob/master/.nvimrc

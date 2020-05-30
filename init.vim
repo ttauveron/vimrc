@@ -29,16 +29,18 @@ let mapleader = ","
 call plug#begin()
 
 Plug 'christianrondeau/vim-base64'
-" A vim plugin to display the indention levels with thin vertical lines
-Plug 'Yggdroot/indentLine'
 Plug 'drewtempelmeyer/palenight.vim'
+
+Plug 'Yggdroot/indentLine'
+" {{{
+" yaml config
+autocmd FileType yaml setlocal ts=2 sts=2 sw=2 expandtab indentkeys-=0# indentkeys-=<:> foldmethod=indent nofoldenable
+let g:indentLine_char = '⦙'
+" }}}
+
+
 Plug 'preservim/nerdtree'
-Plug 'vim-airline/vim-airline'
-
-call plug#end()
-
-let g:airline#extensions#tabline#enabled = 1
-
+" {{{
 " open NERDTree automatically when vim starts up on opening a directory
 autocmd StdinReadPre * let s:std_in=1
 autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in") | exe 'NERDTree' argv()[0] | wincmd p | ene | exe 'cd '.argv()[0] | endif
@@ -47,6 +49,23 @@ autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
 map <C-n> :NERDTreeToggle<CR>
+" }}}
+
+Plug 'vim-airline/vim-airline'
+" {{{
+let g:airline#extensions#tabline#enabled = 1
+" }}}
+
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+" {{{
+noremap <leader>l :Buffers<CR>
+map <C-space> :Files<CR>
+" }}}
+
+call plug#end()
+
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => VIM user interface
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -191,9 +210,8 @@ vnoremap <silent> # :<C-u>call VisualSelection('', '')<CR>?<C-R>=@/<CR><CR>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Moving around, tabs, windows and buffers
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Map <Space> to / (search) and Ctrl-<Space> to ? (backwards search)
+" Map <Space> to / (search)
 map <space> /
-map <C-space> ?
 
 " Disable highlight when <leader><cr> is pressed
 map <silent> <leader><cr> :noh<cr>
@@ -255,7 +273,8 @@ if has("mac") || has("macunix")
   vmap <D-k> <M-k>
 endif
 
-noremap <leader>l :ls<CR>:b<space>
+" noremap <leader>l :ls<CR>:b<space>
+" noremap <leader>l :Buffers<CR>
 
 " Delete trailing white space on save, useful for some filetypes ;)
 fun! CleanExtraSpaces()
@@ -305,7 +324,7 @@ endfunction
 
 function! CmdLine(str)
     call feedkeys(":" . a:str)
-endfunction 
+endfunction
 
 function! VisualSelection(direction, extra_filter) range
     let l:saved_reg = @"
@@ -328,6 +347,4 @@ endfunction
 " => Other/Custom
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-" yaml config
-autocmd FileType yaml setlocal ts=2 sts=2 sw=2 expandtab indentkeys-=0# indentkeys-=<:> foldmethod=indent nofoldenable
-let g:indentLine_char = '⦙'
+
