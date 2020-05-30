@@ -21,6 +21,7 @@ set relativenumber
 " Enable mouse support
 set mouse+=a
 
+let mapleader = ","
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins
@@ -31,9 +32,12 @@ Plug 'christianrondeau/vim-base64'
 " A vim plugin to display the indention levels with thin vertical lines
 Plug 'Yggdroot/indentLine'
 Plug 'drewtempelmeyer/palenight.vim'
+Plug 'preservim/nerdtree'
+Plug 'vim-airline/vim-airline'
 
 call plug#end()
 
+let g:airline#extensions#tabline#enabled = 1
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => VIM user interface
@@ -70,9 +74,6 @@ set hid
 " Configure backspace so it acts as it should act
 set backspace=eol,start,indent
 set whichwrap+=<,>,h,l
-
-" A buffer becomes hidden when it is abandoned
-set hid
 
 " Ignore case when searching
 set ignorecase
@@ -207,7 +208,7 @@ au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g
 set laststatus=2
 
 " Format the status line
-set statusline=\ %{HasPaste()}%F%m%r%h\ %w\ \ CWD:\ %r%{getcwd()}%h\ \ \ Line:\ %l\ \ Column:\ %c
+" set statusline=\ %{HasPaste()}%F%m%r%h\ %w\ \ CWD:\ %r%{getcwd()}%h\ \ \ Line:\ %l\ \ Column:\ %c
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Editing mappings
@@ -245,6 +246,8 @@ if has("mac") || has("macunix")
   vmap <D-j> <M-j>
   vmap <D-k> <M-k>
 endif
+
+noremap <leader>l :ls<CR>:b<space>
 
 " Delete trailing white space on save, useful for some filetypes ;)
 fun! CleanExtraSpaces()
