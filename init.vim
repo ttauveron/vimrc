@@ -28,8 +28,12 @@ let mapleader = ","
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 call plug#begin()
 
-Plug 'christianrondeau/vim-base64'
 Plug 'drewtempelmeyer/palenight.vim'
+Plug 'christianrondeau/vim-base64'
+" {{{
+command! -range Base64Encode <line1>,<line2> :call base64#v_btoa()
+command! -range Base64Decode <line1>,<line2> :call base64#v_atob()
+" }}}
 
 Plug 'Yggdroot/indentLine'
 " {{{
