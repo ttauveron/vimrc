@@ -13,6 +13,7 @@ set number " show line numbers
 set relativenumber " use relative lines numbering by default
 
 set mouse+=a " enable mouse support
+set clipboard+=unnamedplus
 
 let mapleader = ","
 
