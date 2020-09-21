@@ -17,6 +17,8 @@ set clipboard+=unnamedplus
 
 let mapleader = ","
 
+" Groovy syntax highlighting
+au BufNewFile,BufRead Jenkinsfile set filetype=groovy
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
