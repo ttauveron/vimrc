@@ -25,7 +25,7 @@ au BufNewFile,BufRead Jenkinsfile set filetype=groovy
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 call plug#begin()
 
-# Plug '/home/ttauveron/.config/nvim/plugged/mynotes.vim'
+" Plug '/home/ttauveron/.config/nvim/plugged/mynotes.vim'
 
 Plug 'ruanyl/vim-gh-line'
 Plug 'drewtempelmeyer/palenight.vim'
