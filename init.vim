@@ -7,6 +7,7 @@ filetype plugin on
 filetype indent on
 set autoread
 au FocusGained,BufEnter * checktime
+set conceallevel=2
 
 set shortmess+=I " Disable the default Vim startup message
 set number " show line numbers
@@ -24,11 +25,18 @@ au BufNewFile,BufRead Jenkinsfile set filetype=groovy
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 call plug#begin()
 
+# Plug '/home/ttauveron/.config/nvim/plugged/mynotes.vim'
+
+Plug 'ruanyl/vim-gh-line'
 Plug 'drewtempelmeyer/palenight.vim'
 Plug 'christianrondeau/vim-base64'
 " {{{
 command! -range Base64Encode <line1>,<line2> :call base64#v_btoa()
 command! -range Base64Decode <line1>,<line2> :call base64#v_atob()
+" }}}
+Plug 'hashivim/vim-terraform'
+" {{{
+let g:terraform_fmt_on_save = 1
 " }}}
 
 Plug 'Yggdroot/indentLine'
@@ -36,6 +44,7 @@ Plug 'Yggdroot/indentLine'
 " yaml config
 autocmd FileType yaml setlocal ts=2 sts=2 sw=2 expandtab indentkeys-=0# indentkeys-=<:> foldmethod=indent nofoldenable
 let g:indentLine_char = '⦙'
+let g:indentLine_fileTypeExclude = ['json']
 " }}}
 
 
@@ -241,6 +250,8 @@ inoremap <Right> <ESC>:echoe "Use l"<CR>
 inoremap <Up>    <ESC>:echoe "Use k"<CR>
 inoremap <Down>  <ESC>:echoe "Use j"<CR>
 
+xnoremap("<leader>p", "\"_dP")
+
 " Remap VIM 0 to first non-blank character
 " map 0 ^
 
@@ -333,3 +344,21 @@ function! VisualSelection(direction, extra_filter) range
     let @" = l:saved_reg
 endfunction
 
+function! FormatJson() abort
+  silent ! clear
+  silent %!jq .
+endfunction
+
+command! JsonFmt call FormatJson()
+command! -range YamlFmt <line1>,<line2> :!docker run --rm -i -v "${PWD}":/workdir mikefarah/yq:4.24.4 "sort_keys(..)"
+
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Test
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"autocmd BufRead,BufNewFile notes.txt set filetype=mynotes
+"syntax match FooKey   /^[^=]\+/
+"syntax match FooValue /.*/
+"highlight FooKey   ctermfg=cyan guifg=#00ffff
+"highlight FooValue ctermfg=red  guifg=#ff0000
