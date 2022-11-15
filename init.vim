@@ -25,7 +25,7 @@ au BufNewFile,BufRead Jenkinsfile set filetype=groovy
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 call plug#begin()
 
-" Plug '/home/ttauveron/.config/nvim/plugged/mynotes.vim'
+Plug '/home/ttauveron/.config/nvim/plugged/mynotes.vim'
 
 Plug 'ruanyl/vim-gh-line'
 Plug 'drewtempelmeyer/palenight.vim'
@@ -98,7 +98,6 @@ let g:yankring_replace_n_pkey=''
 " }}}
 
 call plug#end()
-
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => VIM user interface
