@@ -596,3 +596,10 @@ vim.api.nvim_create_autocmd('BufReadPost', {
         end
     end,
 })
+
+-- hightlight trailing whitespaces
+vim.cmd([[highlight ExtraWhitespace ctermbg=red guibg=red]])
+vim.api.nvim_create_autocmd("BufEnter", {
+  pattern = "*",
+  command = "match ExtraWhitespace /\\s\\+$/"
+})
