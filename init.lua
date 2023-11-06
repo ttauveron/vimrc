@@ -612,3 +612,11 @@ local function format_json()
     vim.api.nvim_win_set_cursor(0, curpos)
 end
 vim.api.nvim_create_user_command('JsonFmt', format_json, {})
+
+-- Moving lines of text with Alt-j and Alt-k
+vim.api.nvim_set_keymap('n', '<M-j>', "mz:m+<CR>`z", { noremap = true })
+vim.api.nvim_set_keymap('n', '<M-k>', "mz:m-2<CR>`z", { noremap = true })
+
+-- Ensure visual mode mappings work properly with `gv` to reselect the text
+vim.api.nvim_set_keymap('v', '<M-j>', ":m'>+<CR>`<my`>mzgv`yo`z", { noremap = true })
+vim.api.nvim_set_keymap('v', '<M-k>', ":m'<-2<CR>`>my`<mzgv`yo`z", { noremap = true })
