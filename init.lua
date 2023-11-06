@@ -356,9 +356,12 @@ vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = 
 -- Defer Treesitter setup after first render to improve startup time of 'nvim {filename}'
 vim.defer_fn(function()
   require('nvim-treesitter.configs').setup {
+    modules = {},
+    sync_install = false,
+    ignore_install = {},
     -- Add languages to be installed here that you want installed for treesitter
-    ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'terraform', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim',
-      'bash' },
+    ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'terraform', 'rust', 'tsx', 'javascript', 'typescript',
+      'vimdoc', 'vim', 'bash' },
 
     -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
     auto_install = false,
@@ -429,7 +432,7 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 
 -- [[ Configure LSP ]]
 --  This function gets run when an LSP connects to a particular buffer.
-local on_attach = function(_, bufnr)
+local on_attach = function(client, bufnr)
   -- NOTE: Remember that lua is a real programming language, and as such it is possible
   -- to define small helper and utility functions so you don't have to repeat yourself
   -- many times.
@@ -470,6 +473,28 @@ local on_attach = function(_, bufnr)
   vim.api.nvim_buf_create_user_command(bufnr, 'Format', function(_)
     vim.lsp.buf.format()
   end, { desc = 'Format current buffer with LSP' })
+
+  -- Setup formatting on save only if the server supports document formatting
+  if client.server_capabilities.documentFormattingProvider then
+    -- List of filetypes to enable formatting on save
+    local format_on_save_filetypes = {
+      ["terraform"] = true,
+      ["json"] = false,
+      -- Add any other filetypes in the same manner
+    }
+
+    -- If the current buffer's filetype is in the list, set up formatting on save
+    if format_on_save_filetypes[vim.bo[bufnr].filetype] then
+      -- Create an augroup for LSP formatting
+      local augroup = vim.api.nvim_create_augroup("LspFormatting", { clear = true })
+      -- Create the autocommand to format on save
+      vim.api.nvim_create_autocmd("BufWritePre", {
+        group = augroup,
+        buffer = bufnr,
+        command = 'Format',
+      })
+    end
+  end
 end
 
 -- document existing key chains
@@ -608,9 +633,9 @@ vim.api.nvim_create_autocmd("BufEnter", {
 
 -- Define the Lua function to format JSON
 local function format_json()
-    local curpos = vim.api.nvim_win_get_cursor(0)
-    vim.api.nvim_command('%!jq .')
-    vim.api.nvim_win_set_cursor(0, curpos)
+  local curpos = vim.api.nvim_win_get_cursor(0)
+  vim.api.nvim_command('%!jq .')
+  vim.api.nvim_win_set_cursor(0, curpos)
 end
 vim.api.nvim_create_user_command('JsonFmt', format_json, {})
 
