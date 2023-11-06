@@ -77,18 +77,18 @@ require('lazy').setup({
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
 
-  {  
+  {
     'christianrondeau/vim-base64',
     config = function()
       -- Define Base64Encode and Base64Decode as global functions or directly within the command registration.
       vim.api.nvim_create_user_command('Base64Encode', function(opts)
-        local range = opts.line1..','..opts.line2
-        vim.cmd(range..'call base64#v_btoa()')
+        local range = opts.line1 .. ',' .. opts.line2
+        vim.cmd(range .. 'call base64#v_btoa()')
       end, { range = true })
 
       vim.api.nvim_create_user_command('Base64Decode', function(opts)
-        local range = opts.line1..','..opts.line2
-        vim.cmd(range..'call base64#v_atob()')
+        local range = opts.line1 .. ',' .. opts.line2
+        vim.cmd(range .. 'call base64#v_atob()')
       end, { range = true })
     end,
   },
@@ -130,7 +130,7 @@ require('lazy').setup({
   },
 
   -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim', opts = {} },
+  { 'folke/which-key.nvim',  opts = {} },
   {
     -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
@@ -356,7 +356,8 @@ vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = 
 vim.defer_fn(function()
   require('nvim-treesitter.configs').setup {
     -- Add languages to be installed here that you want installed for treesitter
-    ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'bash' },
+    ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim',
+      'bash' },
 
     -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
     auto_install = false,
@@ -588,13 +589,13 @@ cmp.setup {
 
 -- Return to last edit position when opening files (You want this!)
 vim.api.nvim_create_autocmd('BufReadPost', {
-    pattern = "*",
-    callback = function()
-        local last_pos = vim.api.nvim_buf_get_mark(0, "\"")
-        if last_pos[1] > 1 and last_pos[1] <= vim.api.nvim_buf_line_count(0) then
-            vim.api.nvim_win_set_cursor(0, last_pos)
-        end
-    end,
+  pattern = "*",
+  callback = function()
+    local last_pos = vim.api.nvim_buf_get_mark(0, "\"")
+    if last_pos[1] > 1 and last_pos[1] <= vim.api.nvim_buf_line_count(0) then
+      vim.api.nvim_win_set_cursor(0, last_pos)
+    end
+  end,
 })
 
 -- hightlight trailing whitespaces
