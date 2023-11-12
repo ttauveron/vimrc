@@ -1,11 +1,11 @@
 vim.wo.relativenumber = true
 
 -- highlight trailing whitespace
--- vim.cmd [[highlight ExtraWhitespace ctermbg=red guibg=red]]
--- vim.api.nvim_create_autocmd("BufEnter", {
---   pattern = "*",
---   command = "match ExtraWhitespace /\\s\\+$/",
--- })
+vim.cmd [[highlight ExtraWhitespace ctermbg=red guibg=red]]
+vim.api.nvim_create_autocmd("BufEnter", {
+  pattern = "*",
+  command = "match ExtraWhitespace /\\s\\+$/",
+})
 
 -- Define the Lua function to format JSON
 local function format_json()

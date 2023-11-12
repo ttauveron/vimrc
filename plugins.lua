@@ -155,6 +155,14 @@ local plugins = {
       },
     },
   },
+  {
+    -- Autocompletion
+    "hrsh7th/nvim-cmp",
+    dependencies = {
+      -- Adds a number of user-friendly snippets
+      "rafamadriz/friendly-snippets",
+    },
+  },
 }
 
 return plugins
