@@ -31,7 +31,22 @@ local plugins = {
   {
     "nvim-treesitter/nvim-treesitter",
     opts = {
-      ensure_installed = { "html", "css", "bash", "python", "java", "yaml", "sql", "promql", "csv" },
+      ensure_installed = {
+        "html",
+        "css",
+        "bash",
+        "python",
+        "java",
+        "yaml",
+        "sql",
+        "promql",
+        "csv",
+        "c",
+        "lua",
+        "vim",
+        "vimdoc",
+        "query",
+      },
     },
   },
   {
