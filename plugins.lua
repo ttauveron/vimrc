@@ -27,13 +27,6 @@ local plugins = {
     },
   },
   {
-    "neovim/nvim-lspconfig",
-    config = function()
-      require "plugins.configs.lspconfig"
-      require "custom.configs.lspconfig"
-    end,
-  },
-  {
     -- https://mason-registry.dev/registry/list
     "williamboman/mason.nvim",
     opts = {
@@ -131,6 +124,14 @@ local plugins = {
       },
     },
     opts = { theme = "dark", app = "webview" },
+  },
+  {
+    "NvChad/nvim-colorizer.lua",
+    opts = {
+      user_default_options = {
+        names = false,
+      },
+    },
   },
 }
 
