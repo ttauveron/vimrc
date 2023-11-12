@@ -163,6 +163,10 @@ local plugins = {
       "rafamadriz/friendly-snippets",
     },
   },
+  {
+    "nvim-telescope/telescope.nvim",
+    dependencies = { "BurntSushi/ripgrep" },
+  },
 }
 
 return plugins
