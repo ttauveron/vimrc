@@ -1,5 +1,13 @@
 local plugins = {
-  { "hashivim/vim-terraform" },
+  {
+    "hashivim/vim-terraform",
+    config = function()
+      vim.cmd [[let g:terraform_fmt_on_save=1]]
+      vim.cmd [[let g:terraform_align=1]]
+    end,
+    ft = "terraform",
+    lazy = true,
+  },
   {
     "christianrondeau/vim-base64",
     config = function()
@@ -23,7 +31,7 @@ local plugins = {
   {
     "nvim-treesitter/nvim-treesitter",
     opts = {
-      ensure_installed = { "html", "css", "bash", "terraform", "python", "java", "yaml", "sql", "promql", "csv" },
+      ensure_installed = { "html", "css", "bash", "python", "java", "yaml", "sql", "promql", "csv" },
     },
   },
   {
@@ -40,7 +48,6 @@ local plugins = {
         "shellcheck",
         "pyright",
         "black",
-        "terraform-ls",
         "ansible-language-server",
         "dockerfile-language-server",
         "deno",

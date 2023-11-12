@@ -6,7 +6,6 @@ local lint = null_ls.builtins.diagnostics
 local sources = {
   formatting.prettier,
   formatting.stylua,
-  formatting.terraform_fmt,
 
   lint.shellcheck,
 }
@@ -20,7 +19,7 @@ null_ls.setup {
     local filetype = vim.api.nvim_buf_get_option(bufnr, "filetype")
 
     local enabled_filetypes = {
-      ["terraform"] = true,
+      ["terraform"] = false,
       ["lua"] = true,
     }
 
