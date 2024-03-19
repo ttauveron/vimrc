@@ -246,7 +246,20 @@ require('lazy').setup({
 
   "chentoast/marks.nvim",
 
+  {
+    'gelguy/wilder.nvim',
+    dependencies = {'romgrk/fzy-lua-native'},
+  },
 
+  {
+    -- hightlight trailing whitespaces
+    'ntpeters/vim-better-whitespace',
+    config = function()
+      vim.g.better_whitespace_enabled = 1
+      vim.g.strip_whitespace_on_save = 0
+      vim.g.strip_whitespace_confirm = 0
+    end
+  },
   -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
   --       These are some example plugins that I've included in the kickstart repository.
   --       Uncomment any of the lines below to enable them.
@@ -699,6 +712,39 @@ require'marks'.setup {
 
 
 
+-----------------------------------
+local wilder = require('wilder')
+wilder.setup({modes = {':', '/', '?'}})
+-- Disable Python remote plugin
+wilder.set_option('use_python_remote_plugin', 0)
+
+wilder.set_option('pipeline', {
+  wilder.branch(
+    wilder.cmdline_pipeline({
+      fuzzy = 1,
+      fuzzy_filter = wilder.lua_fzy_filter(),
+    }),
+    wilder.vim_search_pipeline()
+  )
+})
+
+wilder.set_option('renderer', wilder.renderer_mux({
+  [':'] = wilder.popupmenu_renderer({
+    highlighter = wilder.lua_fzy_highlighter(),
+    left = {
+      ' ',
+      wilder.popupmenu_devicons()
+    },
+    right = {
+      ' ',
+      wilder.popupmenu_scrollbar()
+    },
+  }),
+  ['/'] = wilder.wildmenu_renderer({
+    highlighter = wilder.lua_fzy_highlighter(),
+  }),
+}))
+-----------------------------------
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
@@ -725,12 +771,6 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- hightlight trailing whitespaces
-vim.cmd([[highlight ExtraWhitespace ctermbg=red guibg=red]])
-vim.api.nvim_create_autocmd("BufEnter", {
-  pattern = "*",
-  command = "match ExtraWhitespace /\\s\\+$/"
-})
 
 -- Define the Lua function to format JSON
 local function format_json()
