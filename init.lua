@@ -1,42 +1,3 @@
---[[
-
-=====================================================================
-==================== READ THIS BEFORE CONTINUING ====================
-=====================================================================
-
-Kickstart.nvim is *not* a distribution.
-
-Kickstart.nvim is a template for your own configuration.
-  The goal is that you can read every line of code, top-to-bottom, understand
-  what your configuration is doing, and modify it to suit your needs.
-
-  Once you've done that, you should start exploring, configuring and tinkering to
-  explore Neovim!
-
-  If you don't know anything about Lua, I recommend taking some time to read through
-  a guide. One possible example:
-  - https://learnxinyminutes.com/docs/lua/
-
-
-  And then you can explore or search through `:help lua-guide`
-  - https://neovim.io/doc/user/lua-guide.html
-
-
-Kickstart Guide:
-
-I have left several `:help X` comments throughout the init.lua
-You should run that command and read that help section for more information.
-
-In addition, I have some `NOTE:` items throughout the file.
-These are for you, the reader to help understand what is happening. Feel free to delete
-them once you know what you're doing, but they should serve as a guide for when you
-are first encountering a few different constructs in your nvim config.
-
-I hope you enjoy your Neovim journey,
-- TJ
-
-P.S. You can delete this when you're done too. It's your config now :)
---]]
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are required (otherwise wrong leader will be used)
@@ -130,8 +91,11 @@ require('lazy').setup({
       'rafamadriz/friendly-snippets',
       'hrsh7th/cmp-buffer',
       'hrsh7th/cmp-path',
+      'hrsh7th/cmp-cmdline',
+
     },
   },
+  'onsails/lspkind-nvim',
 
   {
     "fatih/vim-go",
@@ -526,6 +490,13 @@ local on_attach = function(client, bufnr)
   vim.api.nvim_buf_create_user_command(bufnr, 'Format', function(_)
     vim.lsp.buf.format()
   end, { desc = 'Format current buffer with LSP' })
+
+  if client.supports_method("textDocument/formatting") then
+    vim.api.nvim_create_autocmd("BufWritePre", {
+      buffer = bufnr,
+      callback = function() vim.lsp.buf.format({ bufnr = bufnr }) end
+    })
+  end
 end
 
 -- document existing key chains
@@ -553,9 +524,24 @@ require('mason-lspconfig').setup()
 --
 --  If you want to override the default filetypes that your language server will attach to you can
 --  define the property 'filetypes' to the map in question.
+local util = require('lspconfig').util
+
 local servers = {
   -- clangd = {},
-  gopls = {},
+  gopls = {
+    filetypes = { "go", "gomod", "gowork", "gotmpl" },
+    cmd = { "gopls" },
+    root_dir = util.root_pattern("go.work", "go.mod", ".git"),
+    settings = {
+      gopls = {
+        completeUnimported = true,
+        usePlaceholders = true,
+        analyses = {
+          unusedparams = true,
+        },
+      },
+    },
+  },
   -- pyright = {},
   -- rust_analyzer = {},
   -- tsserver = {},
@@ -581,16 +567,23 @@ local mason_lspconfig = require 'mason-lspconfig'
 
 mason_lspconfig.setup {
   ensure_installed = vim.tbl_keys(servers),
+  automatic_installation = true,
 }
 
 mason_lspconfig.setup_handlers {
   function(server_name)
-    require('lspconfig')[server_name].setup {
+    local server_config = servers[server_name] or {}
+    local opts = {
       capabilities = capabilities,
       on_attach = on_attach,
-      settings = servers[server_name],
-      filetypes = (servers[server_name] or {}).filetypes,
+      settings = server_config.settings or {},
     }
+    for key, value in pairs(server_config) do
+      if key ~= "settings" then -- Avoid overriding the 'settings' table
+        opts[key] = value
+      end
+    end
+    require('lspconfig')[server_name].setup(opts)
   end,
 }
 
@@ -598,10 +591,21 @@ mason_lspconfig.setup_handlers {
 -- See `:help cmp`
 local cmp = require 'cmp'
 local luasnip = require 'luasnip'
+local lspkind = require('lspkind')
 require('luasnip.loaders.from_vscode').lazy_load()
 luasnip.config.setup {}
 
 cmp.setup {
+
+  formatting = {
+    format = lspkind.cmp_format({
+      mode = 'symbol_text',
+
+      maxwidth = 50,
+      ellipsis_char = '...',
+      show_labelDetails = true,
+    }),
+  },
   snippet = {
     expand = function(args)
       luasnip.lsp_expand(args.body)
@@ -830,15 +834,15 @@ vim.api.nvim_create_autocmd('BufReadPost', {
 })
 
 
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "go",
-  callback = function()
-    vim.opt_local.tabstop = 4
-    vim.opt_local.shiftwidth = 4
-    vim.opt_local.softtabstop = 4
-    vim.api.nvim_set_keymap("n", "<Leader>i", "<Plug>(go-info)", { noremap = false, silent = true })
-  end,
-})
+-- vim.api.nvim_create_autocmd("FileType", {
+--   pattern = "go",
+--   callback = function()
+--     vim.opt_local.tabstop = 4
+--     vim.opt_local.shiftwidth = 4
+--     vim.opt_local.softtabstop = 4
+--     vim.api.nvim_set_keymap("n", "<Leader>i", "<Plug>(go-info)", { noremap = false, silent = true })
+--   end,
+-- })
 
 
 -- Define the Lua function to format JSON
