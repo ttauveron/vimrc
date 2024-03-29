@@ -120,7 +120,7 @@ require('lazy').setup({
         add = { text = '+' },
         change = { text = '~' },
         delete = { text = '_' },
-        topdelete = { text = '‾' },
+        topdelete = { text = 'â¾' },
         changedelete = { text = '~' },
       },
       sign_priority = 100,
@@ -595,16 +595,59 @@ local lspkind = require('lspkind')
 require('luasnip.loaders.from_vscode').lazy_load()
 luasnip.config.setup {}
 
+
+local cmp_style = "default"
+local function border(hl_name)
+  return {
+    { "╭", hl_name },
+    { "─", hl_name },
+    { "╮", hl_name },
+    { "│", hl_name },
+    { "╯", hl_name },
+    { "─", hl_name },
+    { "╰", hl_name },
+    { "│", hl_name },
+  }
+end
+
 cmp.setup {
 
   formatting = {
     format = lspkind.cmp_format({
       mode = 'symbol_text',
-
+      preset = 'codicons',
+      symbol_map = {
+        Text = "󰉿",
+        Method = "󰆧",
+        Function = "󰊕",
+        Constructor = "",
+        Field = "󰜢",
+        Variable = "󰀫",
+        Class = "󰠱",
+        Interface = "",
+        Module = "",
+        Property = "󰜢",
+        Unit = "󰑭",
+        Value = "󰎠",
+        Enum = "",
+        Keyword = "󰌋",
+        Snippet = "",
+        Color = "󰏘",
+        File = "󰈙",
+        Reference = "󰈇",
+        Folder = "󰉋",
+        EnumMember = "",
+        Constant = "󰏿",
+        Struct = "󰙅",
+        Event = "",
+        Operator = "󰆕",
+        TypeParameter = "",
+      },
       maxwidth = 50,
       ellipsis_char = '...',
       show_labelDetails = true,
     }),
+    fields = { "abbr", "kind", "menu" },
   },
   snippet = {
     expand = function(args)
@@ -646,6 +689,16 @@ cmp.setup {
     { name = "buffer" },
     { name = "path" },
   },
+  window = {
+    completion = {
+      --   side_padding = (cmp_style ~= "atom" and cmp_style ~= "atom_colored") and 1 or 0,
+      scrollbar = false,
+    },
+    documentation = {
+      border = border "CmpDocBorder",
+      winhighlight = "Normal:CmpDoc",
+    },
+  },
 }
 
 -- stylua: ignore
@@ -681,19 +734,26 @@ require('lualine').setup {
   options = {
     theme = bubbles_theme,
     component_separators = '',
-    section_separators = { left = '', right = '' },
+    component_separators = { left = '', right = '' },
+    section_separators = { left = '', right = '' },
   },
   sections = {
-    lualine_a = { { 'mode', separator = { left = '' }, right_padding = 2 } },
-    lualine_b = { 'filename', 'branch' },
-    lualine_c = {
-      '%=', --[[ add your center compoentnts here in place of this comment ]]
-    },
-    lualine_x = {},
-    lualine_y = { 'filetype', 'progress' },
-    lualine_z = {
-      { 'location', separator = { right = '' }, left_padding = 2 },
-    },
+    lualine_a = { 'mode' },
+    lualine_b = { 'branch', 'diff', 'diagnostics' },
+    lualine_c = { 'filename' },
+    lualine_x = { 'encoding', 'fileformat', 'filetype' },
+    lualine_y = { 'progress' },
+    lualine_z = { 'location' }
+    -- lualine_a = { { 'mode', separator = { left = 'î¶' }, right_padding = 2 } },
+    -- lualine_b = { 'filename', 'branch' },
+    -- lualine_c = {
+    --   '%=', --[[ add your center compoentnts here in place of this comment ]]
+    -- },
+    -- lualine_x = {},
+    -- lualine_y = { 'filetype', 'progress' },
+    -- lualine_z = {
+    --   { 'location', separator = { right = 'î´' }, left_padding = 2 },
+    -- },
   },
   inactive_sections = {
     lualine_a = { 'filename' },
@@ -795,7 +855,7 @@ local popupmenu_renderer = wilder.popupmenu_renderer(
       wilder.popupmenu_devicons(),
       -- wilder.popupmenu_buffer_flags({
       --   flags = ' a + ',
-      --   icons = {['+'] = '', a = '', h = ''},
+      --   icons = {['+'] = 'ï£ª', a = 'ï', h = 'ï£'},
       -- }),
     },
     right = {
@@ -899,6 +959,6 @@ end
 -- Binding the function to a key combination in visual mode, e.g., \o
 vim.api.nvim_set_keymap('v', '\\o', ':lua OpenSelectedLinks()<CR>', { noremap = true, silent = true })
 
--- vim.cmd "let @e = 'df#ýaxI''f ýaC''j0df#ýaxI''f ýaC''Ikb Iterraform state mv 01j'"
+-- vim.cmd "let @e = 'df#ÂÃ½axI''f ÂÃ½aC''j0df#ÂÃ½axI''f ÂÃ½aC''IÂkb Iterraform state mv 01j'"
 
-vim.cmd "let @e = '4xf ��aD1j04xf ��aD0I''A''1kI''A''Iterraform state mv 1jI�kb 1j0'"
+vim.cmd "let @e = '4xf ýaD1j04xf ýaD0I''A''1kI''A''Iterraform state mv 1jIkb 1j0'"
