@@ -159,7 +159,7 @@ require('lazy').setup({
         topdelete = { text = '‾' },
         changedelete = { text = '~' },
       },
-      sign_priority=100,
+      sign_priority = 100,
       on_attach = function(bufnr)
         vim.keymap.set('n', '<leader>hp', require('gitsigns').preview_hunk, { buffer = bufnr, desc = 'Preview git hunk' })
 
@@ -248,7 +248,7 @@ require('lazy').setup({
 
   {
     'gelguy/wilder.nvim',
-    dependencies = {'romgrk/fzy-lua-native'},
+    dependencies = { 'romgrk/fzy-lua-native' },
   },
 
   {
@@ -377,31 +377,32 @@ vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = 
 
 -- yyPgv:!bash<CR>
 local function execute_current_line_and_insert_output()
-    -- Get the current line number and the line's text
-    local line_num = vim.api.nvim_win_get_cursor(0)[1]
-    local line_to_execute = vim.api.nvim_get_current_line()
+  -- Get the current line number and the line's text
+  local line_num = vim.api.nvim_win_get_cursor(0)[1]
+  local line_to_execute = vim.api.nvim_get_current_line()
 
-    -- Execute the line as a bash command
-    local handle = io.popen(line_to_execute, 'r')
-    if handle == nil then
-        print("Failed to execute command")
-        return
-    end
-    local command_output = handle:read("*a") -- Read the entire output
-    handle:close()
+  -- Execute the line as a bash command
+  local handle = io.popen(line_to_execute, 'r')
+  if handle == nil then
+    print("Failed to execute command")
+    return
+  end
+  local command_output = handle:read("*a") -- Read the entire output
+  handle:close()
 
-    -- Split the command output into lines
-    local output_lines = {}
-    for s in command_output:gmatch("[^\r\n]+") do
-        table.insert(output_lines, s)
-    end
+  -- Split the command output into lines
+  local output_lines = {}
+  for s in command_output:gmatch("[^\r\n]+") do
+    table.insert(output_lines, s)
+  end
 
-    -- Insert the output below the current line
-    if #output_lines > 0 then
-        vim.api.nvim_buf_set_lines(0, line_num, line_num, false, output_lines)
-    end
+  -- Insert the output below the current line
+  if #output_lines > 0 then
+    vim.api.nvim_buf_set_lines(0, line_num, line_num, false, output_lines)
+  end
 end
-vim.keymap.set('n', '<leader>zz', execute_current_line_and_insert_output, { desc = 'Execute current line as bash command and insert output below' })
+vim.keymap.set('n', '<leader>zz', execute_current_line_and_insert_output,
+  { desc = 'Execute current line as bash command and insert output below' })
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
@@ -702,7 +703,7 @@ require('lualine').setup {
   extensions = {},
 }
 
-require'marks'.setup {
+require 'marks'.setup {
   -- whether to map keybinds or not. default true
   default_mappings = true,
   -- which builtin marks to show. default {}
@@ -711,8 +712,8 @@ require'marks'.setup {
   cyclic = true,
   -- whether the shada file is updated after modifying uppercase marks. default false
   force_write_shada = false,
-  -- how often (in ms) to redraw signs/recompute mark positions. 
-  -- higher values will have better performance but may cause visual lag, 
+  -- how often (in ms) to redraw signs/recompute mark positions.
+  -- higher values will have better performance but may cause visual lag,
   -- while lower values may cause performance penalties. default 150.
   refresh_interval = 250,
   -- sign priorities for each type of mark - builtin marks, uppercase marks, lowercase
@@ -720,7 +721,7 @@ require'marks'.setup {
   -- can be either a table with all/none of the keys, or a single number, in which case
   -- the priority applies to all marks.
   -- default 10.
-  sign_priority = { lower=10, upper=15, builtin=8, bookmark=20 },
+  sign_priority = { lower = 10, upper = 15, builtin = 8, bookmark = 20 },
   -- disables mark tracking for specific filetypes. default {}
   excluded_filetypes = {},
   -- disables mark tracking for specific buftypes. default {}
@@ -743,7 +744,7 @@ require'marks'.setup {
 
 -----------------------------------
 local wilder = require('wilder')
-wilder.setup({modes = {':', '/', '?'}})
+wilder.setup({ modes = { ':', '/', '?' } })
 -- Disable Python remote plugin
 wilder.set_option('use_python_remote_plugin', 0)
 
@@ -766,7 +767,7 @@ local gradient = {
 }
 
 for i, fg in ipairs(gradient) do
-  gradient[i] = wilder.make_hl('WilderGradient' .. i, 'Pmenu', {{a = 1}, {a = 1}, {foreground = fg}})
+  gradient[i] = wilder.make_hl('WilderGradient' .. i, 'Pmenu', { { a = 1 }, { a = 1 }, { foreground = fg } })
 end
 
 local highlighters = {
@@ -785,33 +786,33 @@ local popupmenu_renderer = wilder.popupmenu_renderer(
       border = 'Normal',
       gradient = gradient,
     },
-     left = {
-       ' ',
+    left = {
+      ' ',
       wilder.popupmenu_devicons(),
       -- wilder.popupmenu_buffer_flags({
       --   flags = ' a + ',
       --   icons = {['+'] = '', a = '', h = ''},
       -- }),
-     },
-     right = {
-       ' ',
+    },
+    right = {
+      ' ',
       wilder.popupmenu_scrollbar(),
-     },
+    },
   })
 )
 
 local wildmenu_renderer = wilder.wildmenu_renderer({
   highlighter = highlighters,
   separator = ' · ',
-  left = {' ', wilder.wildmenu_spinner(), ' '},
-  right = {' ', wilder.wildmenu_index()},
+  left = { ' ', wilder.wildmenu_spinner(), ' ' },
+  right = { ' ', wilder.wildmenu_index() },
 })
 
 wilder.set_option('renderer', wilder.renderer_mux({
   [':'] = popupmenu_renderer,
   ['/'] = wildmenu_renderer,
   substitute = wildmenu_renderer,
- }))
+}))
 -----------------------------------
 
 -- The line beneath this is called `modeline`. See `:help modeline`
@@ -861,38 +862,38 @@ vim.api.nvim_set_keymap('v', '<M-k>', ":m'<-2<CR>`>my`<mzgv`yo`z", { noremap = t
 vim.opt.scrolloff = 5
 
 function OpenSelectedLinks()
-    -- Get the current visual selection
-    local _, start_row, start_col, _ = unpack(vim.fn.getpos("'<"))
-    local _, end_row, end_col, _ = unpack(vim.fn.getpos("'>"))
+  -- Get the current visual selection
+  local _, start_row, start_col, _ = unpack(vim.fn.getpos("'<"))
+  local _, end_row, end_col, _ = unpack(vim.fn.getpos("'>"))
 
-    -- Ensure correct ordering of start and end in case of backward selection
-    if start_row > end_row or (start_row == end_row and start_col > end_col) then
-        start_row, end_row = end_row, start_row
-        start_col, end_col = end_col, start_col
+  -- Ensure correct ordering of start and end in case of backward selection
+  if start_row > end_row or (start_row == end_row and start_col > end_col) then
+    start_row, end_row = end_row, start_row
+    start_col, end_col = end_col, start_col
+  end
+
+  -- Capture the lines of the visual selection
+  local lines = vim.api.nvim_buf_get_lines(0, start_row - 1, end_row, false)
+
+  -- Adjust the first and last line to respect the start_col and end_col
+  lines[1] = string.sub(lines[1], start_col)
+  if #lines > 1 then
+    lines[#lines] = string.sub(lines[#lines], 1, end_col)
+  else
+    lines[1] = string.sub(lines[1], 1, end_col - start_col + 1)
+  end
+
+  -- Iterate over each line and open it as a URL
+  for _, url in ipairs(lines) do
+    if url ~= "" then
+      -- Use 'xdg-open' for Linux, 'open' for macOS. Adjust the command as needed.
+      vim.fn.system({ 'open', url })
     end
-
-    -- Capture the lines of the visual selection
-    local lines = vim.api.nvim_buf_get_lines(0, start_row-1, end_row, false)
-
-    -- Adjust the first and last line to respect the start_col and end_col
-    lines[1] = string.sub(lines[1], start_col)
-    if #lines > 1 then
-        lines[#lines] = string.sub(lines[#lines], 1, end_col)
-    else
-        lines[1] = string.sub(lines[1], 1, end_col - start_col + 1)
-    end
-
-    -- Iterate over each line and open it as a URL
-    for _, url in ipairs(lines) do
-        if url ~= "" then
-            -- Use 'xdg-open' for Linux, 'open' for macOS. Adjust the command as needed.
-            vim.fn.system({'open', url})
-        end
-    end
+  end
 end
 
 -- Binding the function to a key combination in visual mode, e.g., \o
-vim.api.nvim_set_keymap('v', '\\o', ':lua OpenSelectedLinks()<CR>', {noremap = true, silent = true})
+vim.api.nvim_set_keymap('v', '\\o', ':lua OpenSelectedLinks()<CR>', { noremap = true, silent = true })
 
 -- vim.cmd "let @e = 'df#ýaxI''f ýaC''j0df#ýaxI''f ýaC''Ikb Iterraform state mv 01j'"
 
