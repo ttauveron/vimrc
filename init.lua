@@ -237,6 +237,16 @@ require('lazy').setup({
   --
   --    For additional information see: https://github.com/folke/lazy.nvim#-structuring-your-plugins
   -- { import = 'custom.plugins' },
+  {
+    'stevearc/oil.nvim',
+    opts = {},
+    -- Optional dependencies
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    config = function()
+      require('oil').setup()
+      vim.keymap.set('n', '<leader>-', require('oil').open, { noremap = true, silent = true, desc = 'Open oil' })
+    end
+  }
 }, {})
 
 -- [[ Setting options ]]
