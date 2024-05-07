@@ -970,6 +970,7 @@ end
 -- Binding the function to a key combination in visual mode, e.g., \o
 vim.api.nvim_set_keymap('v', '\\o', ':lua OpenSelectedLinks()<CR>', { noremap = true, silent = true })
 
+vim.api.nvim_set_keymap('t', '<Esc>', [[<C-\><C-n>]], { noremap = true, silent = true })
 -- vim.cmd "let @e = 'df#ÂÃ½axI''f ÂÃ½aC''j0df#ÂÃ½axI''f ÂÃ½aC''IÂkb Iterraform state mv 01j'"
 
 vim.cmd "let @e = '4xf ýaD1j04xf ýaD0I''A''1kI''A''Iterraform state mv 1jIkb 1j0'"
