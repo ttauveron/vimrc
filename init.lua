@@ -206,6 +206,16 @@ require('lazy').setup({
       'nvim-treesitter/nvim-treesitter-textobjects',
     },
     build = ':TSUpdate',
+    opts = {
+      highlight = {
+        enable = true,
+        -- keep regex highlights for markdown buffers
+        additional_vim_regex_highlighting = { 'markdown', 'markdown_inline' },
+      },
+    },
+    config = function(_, opts)
+      require('nvim-treesitter.configs').setup(opts)
+    end,
   },
 
   "chentoast/marks.nvim",
