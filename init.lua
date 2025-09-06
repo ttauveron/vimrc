@@ -531,32 +531,40 @@ local on_attach = function(client, bufnr)
 end
 
 -- document existing key chains
-require('which-key').register {
-  ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
-  ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-  ['<leader>g'] = { name = '[G]it', _ = 'which_key_ignore' },
-  ['<leader>h'] = { name = 'More git', _ = 'which_key_ignore' },
-  ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-  ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-  ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
-  ['<leader>z'] = { name = 'My stuff', _ = 'which_key_ignore' },
-}
+-- after which-key loads
+local wk = require('which-key')
+
+-- optional (but nice): pick a preset
+wk.setup({ preset = "modern" }) -- or "classic"
+
+-- declare groups with the new spec
+wk.add({
+  { "<leader>c",  group = "[C]ode" },
+  { "<leader>d",  group = "[D]ocument" },
+  { "<leader>g",  group = "[G]it" },
+  { "<leader>h",  group = "More git" },
+  { "<leader>r",  group = "[R]ename" },
+  { "<leader>s",  group = "[S]earch" },
+  { "<leader>w",  group = "[W]orkspace" },
+  { "<leader>z",  group = "My stuff" },
+
+  -- optional: hide the “group placeholder” entries (the checker suggests these)
+  { "<leader>c_", hidden = true },
+  { "<leader>d_", hidden = true },
+  { "<leader>g_", hidden = true },
+  { "<leader>h_", hidden = true },
+  { "<leader>r_", hidden = true },
+  { "<leader>s_", hidden = true },
+  { "<leader>w_", hidden = true },
+  { "<leader>z_", hidden = true },
+})
 
 -- mason-lspconfig requires that these setup functions are called in this order
 -- before setting up the servers.
 require('mason').setup()
-require('mason-lspconfig').setup()
+local mason_lspconfig = require('mason-lspconfig')
 
--- Enable the following language servers
---  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
---
---  Add any additional override configuration in the following tables. They will be passed to
---  the `settings` field of the server config. You must look up that documentation yourself.
---
---  If you want to override the default filetypes that your language server will attach to you can
---  define the property 'filetypes' to the map in question.
 local util = require('lspconfig').util
-
 local servers = {
   -- clangd = {},
   gopls = {
@@ -586,37 +594,36 @@ local servers = {
   },
 }
 
--- Setup neovim lua configuration
-require('neodev').setup()
+-- Build ensure_installed from your `servers` table
+local ensure = {}
+for name, _ in pairs(servers) do
+  table.insert(ensure, name)
+end
 
--- nvim-cmp supports additional completion capabilities, so broadcast that to servers
-local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
+mason_lspconfig.setup({
+  ensure_installed = ensure,
+  -- automatic_installation = true, -- optional; comment out if your version warns
+})
 
--- Ensure the servers above are installed
-local mason_lspconfig = require 'mason-lspconfig'
+local lspconfig = require('lspconfig')
 
-mason_lspconfig.setup {
-  ensure_installed = vim.tbl_keys(servers),
-  automatic_installation = true,
-}
-
-mason_lspconfig.setup_handlers {
-  function(server_name)
-    local server_config = servers[server_name] or {}
-    local opts = {
-      capabilities = capabilities,
-      on_attach = on_attach,
-      settings = server_config.settings or {},
-    }
-    for key, value in pairs(server_config) do
-      if key ~= "settings" then -- Avoid overriding the 'settings' table
-        opts[key] = value
-      end
+-- Set up each server explicitly (no setup_handlers needed)
+for name, cfg in pairs(servers) do
+  -- Merge your per-server config with common opts
+  local opts = {
+    capabilities = capabilities,
+    on_attach    = on_attach,
+    settings     = cfg.settings or {},
+  }
+  for k, v in pairs(cfg) do
+    if k ~= 'settings' then
+      opts[k] = v
     end
-    require('lspconfig')[server_name].setup(opts)
-  end,
-}
+  end
+  if lspconfig[name] then
+    lspconfig[name].setup(opts)
+  end
+end
 
 -- [[ Configure nvim-cmp ]]
 -- See `:help cmp`
