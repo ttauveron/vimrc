@@ -11,7 +11,6 @@ syntax match mynotesChannel "\v((^| )\zs\#[^ .]+)"
 syntax match mynotesPseudo "\v((^| )\zs\@[^ .]+)"
 syntax match mynotesTicket "\vPLAT-\d+"
 
-" Highlights (use hi def so colorschemes can override)
 hi def mynotesDate    gui=bold    guifg=Yellow
 hi def mynotesTodo    cterm=bold  ctermfg=Red    gui=bold guifg=Red
 hi def mynotesDone    cterm=bold  ctermfg=Green  gui=bold guifg=Green

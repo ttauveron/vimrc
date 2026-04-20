@@ -38,6 +38,17 @@ vim.api.nvim_create_autocmd({ 'BufReadPre', 'BufNewFile' }, {
   end,
 })
 
+vim.api.nvim_create_autocmd({ 'BufReadPost', 'BufNewFile' }, {
+  pattern = '*.mynotes',
+  callback = function(args)
+    vim.api.nvim_buf_call(args.buf, function()
+      vim.cmd('silent! source ' .. vim.fn.fnameescape(
+        vim.fn.stdpath('config') .. '/plugged/mynotes.vim/after/syntax/markdown.vim'
+      ))
+    end)
+  end,
+})
+
 -- NOTE: Here is where you install your plugins.
 --  You can configure plugins using the `config` key.
 --
@@ -107,23 +118,6 @@ require('lazy').setup({
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
 
-  {
-    'christianrondeau/vim-base64',
-    config = function()
-      -- Define Base64Encode and Base64Decode as global functions or directly within the command registration.
-      vim.api.nvim_create_user_command('Base64Encode', function(opts)
-        local range = opts.line1 .. ',' .. opts.line2
-        vim.cmd(range .. 'call base64#v_btoa()')
-      end, { range = true })
-
-      vim.api.nvim_create_user_command('Base64Decode', function(opts)
-        local range = opts.line1 .. ',' .. opts.line2
-        vim.cmd(range .. 'call base64#v_atob()')
-      end, { range = true })
-    end,
-  },
-
-
   -- NOTE: This is where your plugins related to LSP can be installed.
   --  The configuration is done below. Search for lspconfig to find it below.
   {
@@ -173,6 +167,7 @@ require('lazy').setup({
     'hashivim/vim-terraform',
     config = function()
       vim.g.terraform_fmt_on_save = 1
+      vim.g.terraform_binary_path = 'tofu'
     end
   },
 
@@ -267,21 +262,52 @@ require('lazy').setup({
   },
 
   {
-    -- Highlight, edit, and navigate code
-    'nvim-treesitter/nvim-treesitter',
+    'neovim-treesitter/nvim-treesitter',
     dependencies = {
-      'nvim-treesitter/nvim-treesitter-textobjects',
+      'neovim-treesitter/treesitter-parser-registry',
     },
+    lazy = false,
     build = ':TSUpdate',
-    opts = {
-      highlight = {
-        enable = true,
-        -- keep regex highlights for markdown buffers
-        additional_vim_regex_highlighting = { 'markdown', 'markdown_inline' },
-      },
-    },
-    config = function(_, opts)
-      require('nvim-treesitter.configs').setup(opts)
+    config = function()
+      require('nvim-treesitter').setup {
+        install_dir = vim.fn.stdpath('data') .. '/site',
+      }
+
+      require('nvim-treesitter').install {
+        'bash',
+        'c',
+        'cpp',
+        'go',
+        'javascript',
+        'lua',
+        'python',
+        'rust',
+        'terraform',
+        'tsx',
+        'typescript',
+        'vim',
+        'vimdoc',
+      }
+
+      vim.api.nvim_create_autocmd('FileType', {
+        pattern = {
+          'bash',
+          'c',
+          'cpp',
+          'go',
+          'javascript',
+          'lua',
+          'python',
+          'rust',
+          'terraform',
+          'typescript',
+          'tsx',
+          'vim',
+        },
+        callback = function()
+          vim.treesitter.start()
+        end,
+      })
     end,
   },
 
@@ -469,75 +495,6 @@ vim.keymap.set('n', '<leader>zz', execute_current_line_and_insert_output,
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
 -- Defer Treesitter setup after first render to improve startup time of 'nvim {filename}'
-vim.defer_fn(function()
-  require('nvim-treesitter.configs').setup {
-    modules = {},
-    sync_install = false,
-    ignore_install = {},
-    -- Add languages to be installed here that you want installed for treesitter
-    ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'terraform', 'rust', 'tsx', 'javascript', 'typescript',
-      'vimdoc', 'vim', 'bash' },
-
-    -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
-    auto_install = false,
-
-    highlight = { enable = true },
-    indent = { enable = true },
-    incremental_selection = {
-      enable = true,
-      keymaps = {
-        init_selection = '<c-space>',
-        node_incremental = '<c-space>',
-        scope_incremental = '<c-s>',
-        node_decremental = '<M-space>',
-      },
-    },
-    textobjects = {
-      select = {
-        enable = true,
-        lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
-        keymaps = {
-          -- You can use the capture groups defined in textobjects.scm
-          ['aa'] = '@parameter.outer',
-          ['ia'] = '@parameter.inner',
-          ['af'] = '@function.outer',
-          ['if'] = '@function.inner',
-          ['ac'] = '@class.outer',
-          ['ic'] = '@class.inner',
-        },
-      },
-      move = {
-        enable = true,
-        set_jumps = true, -- whether to set jumps in the jumplist
-        goto_next_start = {
-          [']m'] = '@function.outer',
-          [']]'] = '@class.outer',
-        },
-        goto_next_end = {
-          [']M'] = '@function.outer',
-          [']['] = '@class.outer',
-        },
-        goto_previous_start = {
-          ['[m'] = '@function.outer',
-          ['[['] = '@class.outer',
-        },
-        goto_previous_end = {
-          ['[M'] = '@function.outer',
-          ['[]'] = '@class.outer',
-        },
-      },
-      swap = {
-        enable = true,
-        swap_next = {
-          ['<leader>a'] = '@parameter.inner',
-        },
-        swap_previous = {
-          ['<leader>A'] = '@parameter.inner',
-        },
-      },
-    },
-  }
-end, 0)
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
@@ -629,15 +586,22 @@ wk.add({
 -- mason-lspconfig requires that these setup functions are called in this order
 -- before setting up the servers.
 require('mason').setup()
-local mason_lspconfig = require('mason-lspconfig')
 
-local util = require('lspconfig').util
+local mason_lspconfig = require('mason-lspconfig')
+local cmp_nvim_lsp = require('cmp_nvim_lsp')
+
+local capabilities = cmp_nvim_lsp.default_capabilities()
+
 local servers = {
-  -- clangd = {},
   gopls = {
     filetypes = { "go", "gomod", "gowork", "gotmpl" },
     cmd = { "gopls" },
-    root_dir = util.root_pattern("go.work", "go.mod", ".git"),
+    root_dir = function(bufnr, on_dir)
+      local root = vim.fs.root(bufnr, { "go.work", "go.mod", ".git" })
+      if root then
+        on_dir(root)
+      end
+    end,
     settings = {
       gopls = {
         completeUnimported = true,
@@ -648,48 +612,31 @@ local servers = {
       },
     },
   },
-  -- pyright = {},
-  -- rust_analyzer = {},
-  -- tsserver = {},
-  -- html = { filetypes = { 'html', 'twig', 'hbs'} },
 
   lua_ls = {
-    Lua = {
-      workspace = { checkThirdParty = false },
-      telemetry = { enable = false },
+    settings = {
+      Lua = {
+        workspace = { checkThirdParty = false },
+        telemetry = { enable = false },
+      },
     },
   },
 }
 
--- Build ensure_installed from your `servers` table
-local ensure = {}
-for name, _ in pairs(servers) do
-  table.insert(ensure, name)
-end
+local ensure = vim.tbl_keys(servers)
 
 mason_lspconfig.setup({
   ensure_installed = ensure,
-  -- automatic_installation = true, -- optional; comment out if your version warns
 })
 
-local lspconfig = require('lspconfig')
-
--- Set up each server explicitly (no setup_handlers needed)
 for name, cfg in pairs(servers) do
-  -- Merge your per-server config with common opts
-  local opts = {
+  local opts = vim.tbl_deep_extend("force", {
     capabilities = capabilities,
-    on_attach    = on_attach,
-    settings     = cfg.settings or {},
-  }
-  for k, v in pairs(cfg) do
-    if k ~= 'settings' then
-      opts[k] = v
-    end
-  end
-  if lspconfig[name] then
-    lspconfig[name].setup(opts)
-  end
+    on_attach = on_attach,
+  }, cfg)
+
+  vim.lsp.config(name, opts)
+  vim.lsp.enable(name)
 end
 
 -- [[ Configure nvim-cmp ]]
@@ -957,7 +904,6 @@ local popupmenu_renderer = wilder.popupmenu_renderer(
     },
     left = {
       ' ',
-      wilder.popupmenu_devicons(),
       -- wilder.popupmenu_buffer_flags({
       --   flags = ' a + ',
       --   icons = {['+'] = 'ï£ª', a = 'ï', h = 'ï£'},
@@ -1068,3 +1014,102 @@ vim.api.nvim_set_keymap('t', '<Esc>', [[<C-\><C-n>]], { noremap = true, silent =
 -- vim.cmd "let @e = 'df#ÂÃ½axI''f ÂÃ½aC''j0df#ÂÃ½axI''f ÂÃ½aC''IÂkb Iterraform state mv 01j'"
 
 vim.cmd "let @e = '4xf ýaD1j04xf ýaD0I''A''1kI''A''Iterraform state mv 1jIkb 1j0'"
+
+
+
+
+
+local function replace_lines(bufnr, line1, line2, text)
+  local lines = vim.split(text, "\n", { plain = true })
+  vim.api.nvim_buf_set_lines(bufnr, line1 - 1, line2, false, lines)
+end
+
+local function get_visual_bounds()
+  local s = vim.fn.getpos("'<")
+  local e = vim.fn.getpos("'>")
+
+  local srow, scol = s[2], s[3]
+  local erow, ecol = e[2], e[3]
+
+  if srow > erow or (srow == erow and scol > ecol) then
+    srow, erow = erow, srow
+    scol, ecol = ecol, scol
+  end
+
+  return srow, scol, erow, ecol
+end
+
+local function get_text_from_visual(bufnr, srow, scol, erow, ecol)
+  local lines = vim.api.nvim_buf_get_lines(bufnr, srow - 1, erow, false)
+  if #lines == 0 then
+    return ""
+  end
+
+  if #lines == 1 then
+    return string.sub(lines[1], scol, ecol)
+  end
+
+  lines[1] = string.sub(lines[1], scol)
+  lines[#lines] = string.sub(lines[#lines], 1, ecol)
+  return table.concat(lines, "\n")
+end
+
+local function replace_visual_text(bufnr, srow, scol, erow, ecol, replacement)
+  local new_lines = vim.split(replacement, "\n", { plain = true })
+  vim.api.nvim_buf_set_text(bufnr, srow - 1, scol - 1, erow - 1, ecol, new_lines)
+end
+
+local function command_uses_current_visual_range(opts)
+  local srow = vim.fn.getpos("'<")[2]
+  local erow = vim.fn.getpos("'>")[2]
+  if srow == 0 or erow == 0 then
+    return false
+  end
+  return opts.line1 == math.min(srow, erow) and opts.line2 == math.max(srow, erow)
+end
+
+vim.api.nvim_create_user_command("Base64Encode", function(opts)
+  local bufnr = 0
+
+  if opts.range > 0 and command_uses_current_visual_range(opts) then
+    local srow, scol, erow, ecol = get_visual_bounds()
+    local text = get_text_from_visual(bufnr, srow, scol, erow, ecol)
+    local encoded = vim.base64.encode(text)
+    replace_visual_text(bufnr, srow, scol, erow, ecol, encoded)
+    return
+  end
+
+  local lines = vim.api.nvim_buf_get_lines(bufnr, opts.line1 - 1, opts.line2, false)
+  local text = table.concat(lines, "\n")
+  local encoded = vim.base64.encode(text)
+  replace_lines(bufnr, opts.line1, opts.line2, encoded)
+end, { range = true })
+
+vim.api.nvim_create_user_command("Base64Decode", function(opts)
+  local bufnr = 0
+
+  if opts.range > 0 and command_uses_current_visual_range(opts) then
+    local srow, scol, erow, ecol = get_visual_bounds()
+    local text = get_text_from_visual(bufnr, srow, scol, erow, ecol)
+
+    local ok, decoded = pcall(vim.base64.decode, text)
+    if not ok then
+      vim.notify("Base64Decode: contenu invalide", vim.log.levels.ERROR)
+      return
+    end
+
+    replace_visual_text(bufnr, srow, scol, erow, ecol, decoded)
+    return
+  end
+
+  local lines = vim.api.nvim_buf_get_lines(bufnr, opts.line1 - 1, opts.line2, false)
+  local text = table.concat(lines, "\n")
+
+  local ok, decoded = pcall(vim.base64.decode, text)
+  if not ok then
+    vim.notify("Base64Decode: contenu invalide", vim.log.levels.ERROR)
+    return
+  end
+
+  replace_lines(bufnr, opts.line1, opts.line2, decoded)
+end, { range = true })
