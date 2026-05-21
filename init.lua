@@ -23,6 +23,16 @@ vim.opt.rtp:prepend(lazypath)
 
 -- Make *.tsv use the csv filetype
 vim.filetype.add({ extension = { tsv = 'csv' } })
+vim.filetype.add({
+  extension = {
+    tf = 'terraform',
+    tfvars = 'terraform-vars',
+    hcl = 'hcl',
+  },
+  pattern = {
+    ['.*%.auto%.tfvars'] = 'terraform-vars',
+  },
+})
 
 -- Ensure correct order: ftplugin first, then syntax
 vim.cmd('filetype plugin on')
@@ -283,6 +293,7 @@ require('lazy').setup({
         'python',
         'rust',
         'terraform',
+        'hcl',
         'tsx',
         'typescript',
         'vim',
@@ -300,6 +311,8 @@ require('lazy').setup({
           'python',
           'rust',
           'terraform',
+          'terraform-vars',
+          'hcl',
           'typescript',
           'tsx',
           'vim',
