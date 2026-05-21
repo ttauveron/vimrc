@@ -36,7 +36,8 @@ supprimer avant de creer le lien symbolique.
 - `init.lua`: configuration principale, options, plugins, LSP, completion et
   raccourcis.
 - `lazy-lock.json`: versions verrouillees des plugins.
-- `plugged/mynotes.vim`: support local du type de fichier `.mynotes`.
+- `syntax/mynotes.vim`: syntaxe Markdown enrichie pour les fichiers
+  `.mynotes`.
 - `lua/kickstart/plugins/`: modules optionnels herites de kickstart
   (`autoformat`, `debug`), actuellement non charges.
 
@@ -54,8 +55,8 @@ supprimer avant de creer le lien symbolique.
 - CSV/TSV: support `csv.vim`, delimiter TSV configure automatiquement,
   commande locale `:TSVPreview`.
 - Terraform: `vim-terraform`, `terraform_fmt_on_save`, binaire `tofu`.
-- `.mynotes`: type de fichier dedie avec syntaxe Markdown et highlights
-  specifiques.
+- `.mynotes`: type de fichier dedie, syntaxe Markdown reutilisee, highlights
+  specifiques pour dates, statuts, channels, pseudos et tickets.
 
 ## Raccourcis et commandes utiles
 

@@ -22,9 +22,10 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 -- Make *.tsv use the csv filetype
-vim.filetype.add({ extension = { tsv = 'csv' } })
 vim.filetype.add({
   extension = {
+    mynotes = 'mynotes',
+    tsv = 'csv',
     tf = 'terraform',
     tfvars = 'terraform-vars',
     hcl = 'hcl',
@@ -33,6 +34,20 @@ vim.filetype.add({
     ['.*%.auto%.tfvars'] = 'terraform-vars',
   },
 })
+vim.treesitter.language.register('markdown', 'mynotes')
+
+vim.g.markdown_fenced_languages = {
+  'bash=sh',
+  'go',
+  'lua',
+  'python',
+  'json',
+  'javascript',
+  'typescript',
+  'terraform',
+  'hcl',
+  'yaml',
+}
 
 -- Ensure correct order: ftplugin first, then syntax
 vim.cmd('filetype plugin on')
@@ -48,17 +63,6 @@ vim.api.nvim_create_autocmd({ 'BufReadPre', 'BufNewFile' }, {
   end,
 })
 
-vim.api.nvim_create_autocmd({ 'BufReadPost', 'BufNewFile' }, {
-  pattern = '*.mynotes',
-  callback = function(args)
-    vim.api.nvim_buf_call(args.buf, function()
-      vim.cmd('silent! source ' .. vim.fn.fnameescape(
-        vim.fn.stdpath('config') .. '/plugged/mynotes.vim/after/syntax/markdown.vim'
-      ))
-    end)
-  end,
-})
-
 -- NOTE: Here is where you install your plugins.
 --  You can configure plugins using the `config` key.
 --
@@ -66,10 +70,6 @@ vim.api.nvim_create_autocmd({ 'BufReadPost', 'BufNewFile' }, {
 --    as they will be available in your neovim runtime.
 require('lazy').setup({
   -- NOTE: First, some plugins that don't require any configuration
-  {
-    dir = vim.fn.stdpath 'config' .. '/plugged/mynotes.vim',
-  },
-
   {
     'chrisbra/csv.vim',
     lazy = false, -- important: load at startup
