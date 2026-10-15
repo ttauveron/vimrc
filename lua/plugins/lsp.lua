@@ -56,7 +56,7 @@ return {
           vim.lsp.buf.format()
         end, { desc = 'Format current buffer with LSP' })
 
-        if client.supports_method("textDocument/formatting") then
+        if client:supports_method("textDocument/formatting") then
           vim.api.nvim_create_autocmd("BufWritePre", {
             buffer = bufnr,
             callback = function() vim.lsp.buf.format({ bufnr = bufnr }) end
@@ -74,6 +74,12 @@ return {
       local capabilities = cmp_nvim_lsp.default_capabilities()
 
       local servers = {
+        pyright = {
+          root_dir = function(bufnr, on_dir)
+            on_dir(require('config.python').root(bufnr))
+          end,
+          before_init = require('config.python').before_init,
+        },
         gopls = {
           filetypes = { "go", "gomod", "gowork", "gotmpl" },
           cmd = { "gopls" },

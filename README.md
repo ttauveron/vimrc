@@ -31,6 +31,9 @@ supprimer avant de creer le lien symbolique.
 - `jq`: utilise par la commande `:JsonFmt`.
 - `tofu`: utilise pour le formatage Terraform/OpenTofu.
 - `gopls`: installe via Mason pour Go.
+- `python3` avec support des environnements virtuels: execution Python et
+  installation de `debugpy` via Mason.
+- `node` et `npm`: installation et execution de Pyright via Mason.
 
 ## Organisation
 
@@ -48,8 +51,9 @@ supprimer avant de creer le lien symbolique.
 - `lazy-lock.json`: versions verrouillees des plugins.
 
 Les modules de plugins sont `completion`, `editor`, `git`, `languages`, `lsp`,
-`navigation`, `treesitter` et `ui`. Les exemples Kickstart inactifs de formatage
-et de debogage ont ete retires; aucun debogueur n'est active a ce stade.
+`navigation`, `python`, `treesitter` et `ui`. Le module Python charge le
+client DAP, son interface et l'adaptateur Python a l'ouverture d'un fichier
+Python. Les anciens exemples Kickstart inactifs ont ete retires.
 
 ### Ajouter ou modifier une fonctionnalite
 
@@ -73,7 +77,8 @@ ordonner leur chargement.
 
 - Leader: `<Space>`.
 - Recherche et navigation avec Telescope.
-- LSP active pour Go (`gopls`) et Lua (`lua_ls`) via Mason.
+- LSP active pour Go (`gopls`), Lua (`lua_ls`) et Python (`pyright`) via Mason.
+- Menu Python contextuel avec documentation, breakpoints et debogage visuel.
 - Completion avec `nvim-cmp`, LuaSnip et snippets VS Code.
 - Treesitter pour Bash, C/C++, Go, JavaScript/TypeScript, Lua, Python, Rust,
   Terraform/HCL et Vim.
@@ -108,6 +113,83 @@ ordonner leur chargement.
 - `:Base64Encode` / `:Base64Decode`: encoder ou decoder une plage ou selection.
 - `\o` en mode visuel: ouvrir les lignes selectionnees comme URLs.
 - `<Esc>` en terminal: revenir au mode normal.
+
+## Python : documentation et debogage
+
+Ouvrir un fichier `.py`, passer en mode normal et appuyer sur **Espace**.
+Le menu Which Key apparait apres 150 ms; choisir **p — Python** pour voir
+les actions. Aucun raccourci Python n'est ajoute aux buffers Go ou Lua.
+Les controles d'execution restent disponibles dans les panneaux du debogueur.
+
+| Touches | Action |
+| --- | --- |
+| `Espace p h` | Documentation de la fonction sous le curseur |
+| `Espace p b` | Placer / retirer un breakpoint sur la ligne courante |
+| `Espace p B` | Definir un breakpoint conditionnel |
+| `Espace p r` | Lancer le fichier courant sous debogueur |
+| `Espace p a` | Lancer avec des arguments, avec prise en charge des guillemets |
+| `Espace p c` | Continuer, ou lancer si aucune session n'est active |
+| `Espace p n` | Executer la ligne suivante sans entrer dans les fonctions |
+| `Espace p i` | Entrer dans la fonction |
+| `Espace p o` | Sortir de la fonction |
+| `Espace p e` | Inspecter la variable sous le curseur pendant une pause |
+| `Espace p x` | Saisir et evaluer une expression pendant une pause |
+| `Espace p u` | Afficher / masquer les panneaux |
+| `Espace p l` | Relancer la derniere execution avec ses arguments |
+| `Espace p q` | Arreter le programme |
+| `Espace p v` | Afficher / choisir l'interpreteur Python du projet |
+
+`K`, `gd`, `gr` et les autres raccourcis LSP habituels restent disponibles.
+Le menu Document sous `Espace d` est conserve.
+
+Le fichier lance est enregistre avant l'execution et la relance. Le repertoire
+de travail est la racine du projet (par exemple le dossier contenant
+`pyproject.toml` ou `.git`), ou le dossier du script en l'absence de marqueur.
+
+Au demarrage du debogage, les variables, la pile d'appels et les expressions
+surveillees apparaissent a gauche; la sortie du programme et la console du
+debogueur apparaissent en bas. Utiliser `Entree` pour developper une variable
+et `Ctrl-w` suivi d'une direction pour naviguer entre les fenetres.
+Dans le panneau Watches, passer en insertion pour ajouter une expression.
+La sortie reste consultable apres la fin du programme; `Espace p u` permet de
+fermer les panneaux. Dans le terminal du programme, `Esc` revient au mode normal
+pour retrouver le menu.
+
+### Interpreteur et installation
+
+Pyright et le programme debogue utilisent le meme interpreteur, choisi dans
+cet ordre: selection manuelle pour le projet, `VIRTUAL_ENV`, `CONDA_PREFIX`,
+environnement local `.venv` / `venv` / `env` / `.env`, puis `python3` ou `python`
+du PATH. Les environnements actives inexistants sont ignores.
+`Espace p v` permet de choisir un executable ou de revenir a la detection
+automatique. Ce choix manuel dure le temps de la session Neovim et met a jour
+Pyright et les prochaines executions, y compris la relance.
+
+Pyright est installe automatiquement via Mason. A la premiere ouverture d'un
+fichier Python, Mason installe aussi `debugpy` dans un environnement separe:
+aucun paquet de debogage n'est ajoute au projet. Attendre la fin de ces
+installations avant la premiere utilisation. En cas de probleme, ouvrir
+`:Mason` et verifier `pyright` et `debugpy`, ou les installer explicitement avec
+`:MasonInstall pyright debugpy`.
+
+Pour essayer le parcours, ouvrir `examples/python/debug_demo.py`, poser un
+breakpoint sur la ligne `print(message, details)`, puis choisir `Espace p a`
+et saisir `"Ada Lovelace"`. Inspecter `name`, `message` et `details`, avancer
+avec `Espace p n`, puis continuer avec `Espace p c`.
+
+### Verification Python
+
+Un test d'integration utilise les vrais Pyright et debugpy, un projet temporaire,
+un `.venv` et une dependance installee uniquement dans ce dernier. Il verifie
+la documentation locale et celle de la dependance, l'affichage du menu Which Key,
+le breakpoint, les arguments, les variables dans les panneaux, le pas a pas,
+la reprise, la relance, l'arret et l'isolation des raccourcis par type de fichier.
+Les plugins et les paquets Mason doivent deja etre installes; `uv` est requis
+pour creer l'environnement temporaire du test.
+
+```sh
+nvim --headless -u NONE --cmd 'set loadplugins' '+luafile tests/python_ide.lua'
+```
 
 ## Maintenance
 
