@@ -16,36 +16,35 @@ end
 function M.launch(with_args)
   local dap = require('dap')
   if dap.session() then
-    notify('Une session est deja active. Continuer avec Espace p c ou arreter avec Espace p q.')
+    notify('A debug session is already active. Continue with Space p c or stop with Space p q.')
     return
   end
   local bufnr = source_buffer()
   if not bufnr or vim.api.nvim_buf_get_name(bufnr) == '' then
-    notify('Ouvrir et enregistrer un fichier Python avant de le lancer.')
+    notify('Open and save a Python file before running it.')
     return
   end
   local root = python.root(bufnr)
   local interpreter = python.executable(root)
   if interpreter == '' or vim.fn.executable(interpreter) ~= 1 then
-    notify('Choisir un interpreteur Python avec Espace p v.')
+    notify('Select a Python interpreter with Space p v.')
     return
   end
   local adapter = vim.fn.stdpath('data') .. '/mason/packages/debugpy/venv/bin/python'
   if vim.fn.executable(adapter) ~= 1 then
-    notify('Le debogueur est en cours d’installation ou absent. Ouvrir :Mason et installer debugpy.')
+    notify('The debugger is missing or still installing. Open :Mason and install debugpy.')
     return
   end
   local function run(args)
     if not vim.api.nvim_buf_is_valid(bufnr) then return end
-    local ok, err = pcall(vim.api.nvim_buf_call, bufnr, function() vim.cmd.update() end)
-    if not ok then notify('Enregistrement impossible : ' .. err); return end
+    local ok, err = pcall(vim.api.nvim_buf_call, bufnr, function() vim.cmd('silent update') end)
+    if not ok then notify('Unable to save file: ' .. err); return end
     last_source = bufnr
     has_run = true
-    vim.notify('Python : ' .. interpreter .. '\nProjet : ' .. root)
     dap.run({
       type = 'python',
       request = 'launch',
-      name = 'Python : ' .. vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ':t'),
+      name = 'Python: ' .. vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ':t'),
       program = vim.api.nvim_buf_get_name(bufnr),
       cwd = root,
       pythonPath = function() return python.executable(root) end,
@@ -55,10 +54,10 @@ function M.launch(with_args)
     })
   end
   if with_args then
-    vim.ui.input({ prompt = 'Arguments (guillemets acceptes) : ' }, function(input)
+    vim.ui.input({ prompt = 'Arguments (quotes supported): ' }, function(input)
       if input == nil then return end
       local ok, args = pcall(require('dap.utils').splitstr, input)
-      if not ok then notify('Arguments invalides : ' .. args); return end
+      if not ok then notify('Invalid arguments: ' .. args); return end
       run(args)
     end)
   else
@@ -70,7 +69,7 @@ local function stopped(action)
   return function()
     local session = require('dap').session()
     if not session or not session.stopped_thread_id then
-      notify('Le programme doit etre en pause sur un breakpoint.')
+      notify('The program must be paused at a breakpoint.')
       return
     end
     action()
@@ -86,55 +85,59 @@ function M.setup_buffer(bufnr)
     vim.keymap.set('n', '<leader>p' .. key, action, { buffer = bufnr, silent = true, desc = desc })
   end
   require('which-key').add({ { '<leader>p', group = 'Python', buffer = bufnr } })
-  map('r', function() M.launch(false) end, 'Lancer le fichier sous debogueur')
-  map('a', function() M.launch(true) end, 'Lancer avec des arguments')
+  map('m', require('config.context_menu').open, 'Context menu: panel actions')
+  map('R', require('config.debug_actions').refresh, 'Refresh variables and watches')
+  map('r', function() M.launch(false) end, 'Debug current file')
+  map('a', function() M.launch(true) end, 'Run with arguments')
   map('c', function()
     if dap.session() then dap.continue() else M.launch(false) end
-  end, 'Continuer / demarrer')
-  map('n', stopped(dap.step_over), 'Ligne suivante')
-  map('i', stopped(dap.step_into), 'Entrer dans la fonction')
-  map('o', stopped(dap.step_out), 'Sortir de la fonction')
-  map('e', stopped(dapui.eval), 'Inspecter la variable sous le curseur')
+  end, 'Continue / start')
+  map('n', stopped(dap.step_over), 'Step over')
+  map('i', stopped(dap.step_into), 'Step into')
+  map('o', stopped(dap.step_out), 'Step out')
+  map('e', stopped(dapui.eval), 'Inspect variable under cursor')
   map('x', stopped(function()
-    vim.ui.input({ prompt = 'Expression Python : ' }, function(expression)
+    vim.ui.input({ prompt = 'Python expression: ' }, function(expression)
       if expression and expression ~= '' then dapui.eval(expression, { enter = true }) end
     end)
-  end), 'Evaluer une expression')
-  map('u', dapui.toggle, 'Afficher / masquer les panneaux')
+  end), 'Evaluate expression')
+  map('u', dapui.toggle, 'Toggle debug panels')
   map('l', function()
-    if dap.session() then notify('Arreter la session avant de relancer.'); return end
-    if not has_run then notify('Lancer un fichier avec Espace p r avant de le relancer.'); return end
+    if dap.session() then notify('Stop the current session before running again.'); return end
+    if not has_run then notify('Run a file with Space p r before using run last.'); return end
     if last_source and vim.api.nvim_buf_is_valid(last_source) then
-      local ok, err = pcall(vim.api.nvim_buf_call, last_source, function() vim.cmd.update() end)
-      if not ok then notify('Enregistrement impossible : ' .. err); return end
+      local ok, err = pcall(vim.api.nvim_buf_call, last_source, function() vim.cmd('silent update') end)
+      if not ok then notify('Unable to save file: ' .. err); return end
     end
     dap.run_last()
-  end, 'Relancer la derniere execution')
+  end, 'Run last')
   map('q', function()
-    if dap.session() then dap.terminate() else notify('Aucune session active.') end
-  end, 'Arreter le programme')
+    if dap.session() then dap.terminate() else notify('No active debug session.') end
+  end, 'Stop execution')
   if is_python then
     -- Leave room for both Gitsigns (priority 100) and a breakpoint (priority 21).
     vim.api.nvim_buf_call(bufnr, function() vim.opt_local.signcolumn = 'yes:2' end)
     map('h', function()
       if #vim.lsp.get_clients({ bufnr = bufnr, name = 'pyright' }) == 0 then
-        notify('Le serveur Python demarre ou est absent. Verifier pyright dans :Mason.')
+        notify('The Python server is starting or missing. Check pyright in :Mason.')
         return
       end
       vim.lsp.buf.hover({ border = 'rounded' })
-    end, 'Documentation de la fonction')
-    map('b', dap.toggle_breakpoint, 'Placer / retirer un breakpoint')
+    end, 'Show documentation')
+    map('b', dap.toggle_breakpoint, 'Toggle breakpoint')
     map('B', function()
-      vim.ui.input({ prompt = 'Condition du breakpoint : ' }, function(condition)
+      vim.ui.input({ prompt = 'Breakpoint condition: ' }, function(condition)
         if condition and condition ~= '' then dap.set_breakpoint(condition) end
       end)
-    end, 'Breakpoint conditionnel')
-    map('v', function() python.select(bufnr) end, 'Voir / choisir l’interpreteur Python')
+    end, 'Conditional breakpoint')
+    map('v', function() python.select(bufnr) end, 'View / select Python interpreter')
   end
 end
 
 function M.setup()
   local dap = require('dap')
+  -- Reuse the code window after a context menu closes, rather than its former popup.
+  dap.defaults.python.switchbuf = 'useopen,uselast'
   require('mason').setup()
   -- Mason installs debugpy; dap-python owns adapter configuration.
   require('mason-nvim-dap').setup({ ensure_installed = { 'python' } })
@@ -165,6 +168,7 @@ function M.setup()
     },
     floating = { border = 'rounded' },
   })
+  require('config.debug_console').setup()
   -- Keep the output panels open after termination.
   dap.listeners.after.event_initialized['python-ui'] = function() require('dapui').open() end
 
@@ -176,7 +180,7 @@ function M.setup()
       if ft == 'python' or ft:match('^dapui_') or ft == 'dap-repl' or ft == 'dap-terminal' then
         M.setup_buffer(event.buf)
       elseif vim.b[event.buf].python_menu then
-        for _, key in ipairs({ 'r', 'a', 'c', 'n', 'i', 'o', 'e', 'x', 'u', 'l', 'q', 'h', 'b', 'B', 'v' }) do
+        for _, key in ipairs({ 'm', 'R', 'r', 'a', 'c', 'n', 'i', 'o', 'e', 'x', 'u', 'l', 'q', 'h', 'b', 'B', 'v' }) do
           pcall(vim.keymap.del, 'n', '<leader>p' .. key, { buffer = event.buf })
         end
         vim.b[event.buf].python_menu = nil

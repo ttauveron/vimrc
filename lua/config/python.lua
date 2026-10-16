@@ -40,8 +40,8 @@ end
 
 function M.select(bufnr)
   local root = M.root(bufnr)
-  vim.ui.select({ 'Choisir un interpreteur', 'Detection automatique' }, {
-    prompt = 'Python : ' .. M.executable(root),
+  vim.ui.select({ 'Select interpreter', 'Auto-detect' }, {
+    prompt = 'Python: ' .. M.executable(root),
   }, function(choice)
     if not choice then return end
     local function apply(path)
@@ -55,16 +55,16 @@ function M.select(bufnr)
           client:notify('workspace/didChangeConfiguration', { settings = client.settings })
         end
       end
-      vim.notify('Python : ' .. python)
+      vim.notify('Python: ' .. python)
     end
-    if choice == 'Detection automatique' then
+    if choice == 'Auto-detect' then
       apply(nil)
     else
-      vim.ui.input({ prompt = 'Interpreteur Python : ', default = M.executable(root), completion = 'file' }, function(path)
+      vim.ui.input({ prompt = 'Python interpreter: ', default = M.executable(root), completion = 'file' }, function(path)
         if not path then return end
         path = vim.fn.fnamemodify(vim.fn.expand(path), ':p')
         if vim.fn.executable(path) ~= 1 or vim.fn.isdirectory(path) == 1 then
-          vim.notify('Interpreteur Python introuvable : ' .. path, vim.log.levels.ERROR)
+          vim.notify('Python interpreter not found: ' .. path, vim.log.levels.ERROR)
           return
         end
         apply(path)

@@ -114,6 +114,70 @@ ordonner leur chargement.
 - `\o` en mode visuel: ouvrir les lignes selectionnees comme URLs.
 - `<Esc>` en terminal: revenir au mode normal.
 
+## Menu contextuel commun
+
+**Clic droit**, **Espace m**, **Maj-F10** et `:ContextActions` ouvrent le meme
+menu flottant avec recherche. Choisir une action avec les fleches et Entree,
+ou taper quelques lettres pour filtrer; Esc ferme le menu. Le clic droit cible
+le symbole clique, y compris sa colonne. Le menu natif Neovim « Inspect » ne
+partage plus ce bouton. Les raccourcis Python existants sont conserves.
+
+Les actions sont regroupees par origine et adaptees au buffer et a l'etat:
+
+- **Code**: documentation, definition, references, renommage, formatage, etc.,
+  selon les capacites du serveur LSP attache. Python, Go et Lua utilisent le
+  meme fournisseur. Les corrections/refactorisations sont demandees au serveur
+  et presentees dans le meme type de menu.
+- **Debug**: breakpoints et lancement pour les langages configures; variables,
+  Watches, pile et console pour les panneaux DAP. Les commandes de pas a pas et
+  d'edition ne sont proposees qu'en pause. Aucun debogueur Go n'est installe par
+  ce mecanisme: il apparaitra dans le menu lorsque son adaptateur sera configure.
+- **Editor**: enregistrement et diagnostics.
+- **Extensions / More buffer actions**: les raccourcis locaux possedant une
+  description, annonces par les extensions du buffer.
+
+Les listes utilisant `vim.ui.select` (dont les actions LSP et le choix de
+l'interpreteur Python) reutilisent cette interface. Les actions principales
+sont une selection utile; le menu ne pretend pas enumerer toutes les fonctions
+internes de tous les plugins.
+
+### Brancher une extension
+
+`lua/config/context_menu.lua` gere les points d'entree, la fenetre et la
+restauration du contexte. Les fournisseurs dans `lua/config/context_actions/`
+fournissent les actions; ils ne creent pas leur propre menu. Il n'y a pas de
+nouvelle dependance: la presentation reutilise Telescope.
+
+Une extension peut enregistrer un fournisseur depuis sa configuration:
+
+```lua
+require('config.context_menu').register('exemple', {
+  priority = 40,
+  actions = function(context)
+    if context.filetype ~= 'sql' then return {} end
+    return {
+      {
+        id = 'exemple.chemin',
+        group = 'Mon extension',
+        label = 'Afficher le chemin du fichier',
+        run = function(origin)
+          vim.notify(vim.api.nvim_buf_get_name(origin.bufnr))
+        end,
+      },
+    }
+  end,
+})
+```
+
+Le contexte contient `bufnr`, `winid`, `filetype` et `cursor` (ligne a partir de
+1, colonne en octets a partir de 0). Un fournisseur retourne uniquement les
+actions pertinentes; `enabled = false` masque une action. Les identifiants
+sont uniques, les priorites croissantes determinent l'ordre; reenregistrer un
+fournisseur le remplace, `unregister(id)` le retire. Les fournisseurs sont
+reevalues avant execution pour verifier que l'action reste disponible.
+L'exemple SQL n'ajoute aucun outil de base de donnees: un vrai fournisseur
+appellerait l'API de l'extension installee dans sa fonction `run`.
+
 ## Python : documentation et debogage
 
 Ouvrir un fichier `.py`, passer en mode normal et appuyer sur **Espace**.
@@ -139,10 +203,22 @@ Les controles d'execution restent disponibles dans les panneaux du debogueur.
 | `Espace p q` | Arreter le programme |
 | `Espace p v` | Afficher / choisir l'interpreteur Python du projet |
 
+### Actions dans les panneaux du debogueur
+
+Le menu contextuel commun (clic droit, `Espace m` ou `Maj-F10`) propose les
+actions du panneau courant. L'ancien raccourci `Espace p m` ouvre le meme menu.
+Les actions qui demandent une pause ne sont affichees que lorsque le programme
+est arrete sur un breakpoint. L'action « Edit variable / expression »
+demande l'expression (par exemple `test` ou `objet.attribut`) puis sa nouvelle
+valeur (`42` ou `"Bonjour"`). Les variables et les Watches sont rafraichis apres
+validation. Le menu permet aussi de rafraichir apres une commande dans le REPL;
+`Espace p R` reste disponible pour le faire directement, sans avancer le programme.
+
 `K`, `gd`, `gr` et les autres raccourcis LSP habituels restent disponibles.
 Le menu Document sous `Espace d` est conserve.
 
-Le fichier lance est enregistre avant l'execution et la relance. Le repertoire
+Le lancement avec `Espace p r` est direct, sans notification a valider avec
+Entree. Le fichier lance est enregistre silencieusement avant l'execution et la relance. Le repertoire
 de travail est la racine du projet (par exemple le dossier contenant
 `pyproject.toml` ou `.git`), ou le dossier du script en l'absence de marqueur.
 
@@ -151,6 +227,8 @@ surveillees apparaissent a gauche; la sortie du programme et la console du
 debogueur apparaissent en bas. Utiliser `Entree` pour developper une variable
 et `Ctrl-w` suivi d'une direction pour naviguer entre les fenetres.
 Dans le panneau Watches, passer en insertion pour ajouter une expression.
+La console se positionne au debut des logs lorsqu'on y entre et a la fin de
+l'execution. La saisie interactive du programme reste possible en mode terminal.
 La sortie reste consultable apres la fin du programme; `Espace p u` permet de
 fermer les panneaux. Dans le terminal du programme, `Esc` revient au mode normal
 pour retrouver le menu.
@@ -184,12 +262,23 @@ un `.venv` et une dependance installee uniquement dans ce dernier. Il verifie
 la documentation locale et celle de la dependance, l'affichage du menu Which Key,
 le breakpoint, les arguments, les variables dans les panneaux, le pas a pas,
 la reprise, la relance, l'arret et l'isolation des raccourcis par type de fichier.
+Il verifie aussi le menu LSP commun en Go, l'ajout/retrait d'un fournisseur,
+l'annulation des choix et le ciblage du contexte d'origine.
 Les plugins et les paquets Mason doivent deja etre installes; `uv` est requis
 pour creer l'environnement temporaire du test.
 
 ```sh
-nvim --headless -u NONE --cmd 'set loadplugins' '+luafile tests/python_ide.lua'
+nvim --headless -i NONE -u NONE --cmd 'set loadplugins' '+luafile tests/python_ide.lua'
 ```
+
+Le test d'interface attache un client UI a Neovim et verifie les vrais clics
+droits successifs (simples et multiples, appui/relachement, mode insertion),
+l'annulation et l'entree clavier commune. Il necessite le module Python `msgpack`:
+
+```sh
+python3 tests/context_mouse.py
+```
+
 
 ## Maintenance
 
